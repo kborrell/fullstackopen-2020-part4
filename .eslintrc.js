@@ -14,5 +14,6 @@ module.exports = {
   rules: {
     semi: 0,
     'no-console': 0,
+    'no-underscore-dangle': ['error', { allow: ['_id', '__v'] }],
   },
 };
