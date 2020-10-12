@@ -15,6 +15,7 @@ blogsRouter.post('/', async (request, response) => {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
   const user = await User.findById(decodedToken.id)
+  console.log(body)
   const blog = new Blog({
     title: body.title,
     author: body.author,
@@ -23,7 +24,12 @@ blogsRouter.post('/', async (request, response) => {
     user: user._id,
   })
 
+  if (!blog.likes) {
+    blog.likes = 0
+  }
+
   const savedBlog = await blog.save()
+  await savedBlog.populate('user', { username: 1, name: 1 }).execPopulate()
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
   return response.status(201).json(savedBlog)
@@ -45,12 +51,9 @@ blogsRouter.delete('/:id', async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-  if (!request.body.likes) {
-    return response.status(400).send({ error: 'missing likes property' })
-  }
-  const updatedBlog = await Blog
-    .findByIdAndUpdate(request.params.id, { likes: request.body.likes }, { new: true })
-  return response.json(updatedBlog)
+  const blog = request.body
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+  response.json(updatedBlog.toJSON())
 })
 
 module.exports = blogsRouter

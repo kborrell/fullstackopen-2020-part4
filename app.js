@@ -24,7 +24,14 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 
+if (process.env.NODE_ENV === 'test') {
+  // eslint-disable-next-line global-require
+  const testingRouter = require('./controllers/testing')
+  app.use('/api/testing', testingRouter)
+}
+
 const errorHandler = (error, request, response, next) => {
+  console.log(error)
   if (error.name === 'ValidationError') {
     return response.status(400).send({ error: error.message.substring(error.message.lastIndexOf(':') + 2) })
   }
